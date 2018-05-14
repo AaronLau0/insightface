@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function
+import os
+import sys
+
+root_path = os.path.abspath("D:/insightface-master/")
+sys.path.insert(0, os.path.join(root_path, "/src"))
+sys.path.insert(0, os.path.join(root_path, "/src/common"))
+sys.path.insert(0, os.path.join(root_path, "/src/data"))
+import mxnet as mx
+import cv2
+from mxnet import recordio
+
+
+if __name__ == '__main__':
+
+    path_imgrec = "D:/insightface-master/datasets/faces_ms1m_112x112/train.rec"
+    #path_imgrec = "D:/insightface-master/datasets/faces_vgg_112x112/train.rec"
+    path_imgidx = path_imgrec[0:-4] + ".idx"
+    save_path = "D:/data/vgg/"
+    imgrec = mx.recordio.MXIndexedRecordIO(path_imgidx, path_imgrec, 'r')  # pylint: disable=redefined-variable-type
+    s = imgrec.read_idx(0)
+    header, _ = mx.recordio.unpack(s)
+    if header.flag > 0:
+        print('header0 label', header.label)
+        imgidx = range(1, int(header.label[0]))
+        count = 0
+        for identity in imgidx:
+            count = identity
+            s = imgrec.read_idx(identity)
+            header, img = mx, recordio.unpack_img(s, 1)
+            jpg = '{:0>8}.{}'.format(identity,'jpg')
+            name = save_path+jpg
+            cv2.imwrite(name,img[1])
+            print(name)
+        print('The number of images:%d',count)
+
+
